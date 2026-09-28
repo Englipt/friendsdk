@@ -1,0 +1,8 @@
+{
+  "name": "Rare Friend Theater",
+  "consumable": "Unused SDK ticket",
+  "price": "1000000000000000000",
+  "outcomes": [
+    { "name": "Unused SDK outcome", "chanceBps": 10000, "reward": "1000000000000000000" }
+  ]
+}

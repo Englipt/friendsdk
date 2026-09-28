@@ -1,0 +1,2 @@
+:root { --rf-game-max-width: 1120px; --rf-game-aspect-ratio: 16 / 10; }
+@media (max-width: 600px) { :root { --rf-game-aspect-ratio: 3 / 4; } }
