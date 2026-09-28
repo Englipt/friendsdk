@@ -3,7 +3,7 @@
 **Builder:** [@Englipt](https://github.com/Englipt)  
 **Category:** Character Spotlight
 
-Your verified Generations NFT stars in a three-act interactive story, with its on-chain sprite appearing in every scene and in a shareable comic.
+Your verified Generations NFT stars in a three-act interactive story. Its on-chain sprite family gives it a stage role and color, and its original sprite appears in every scene and in a shareable comic.
 
 ## Source and playable preview
 
@@ -15,7 +15,7 @@ Connect a browser wallet on Robinhood mainnet (chain 4663) holding a hardwired G
 
 ## Play
 
-Choose one of three actions in each act and continue to the ending. Your choices appear in the stage scene and finished three-panel comic. Open the comic and use the browser's image menu to save it. In the Backstage Prop Box, spend simulated RF on a moon lantern, brass key, or star confetti, then equip one to show on stage and in the comic. Choices, buttons, and props work with mouse, keyboard, and touch. A reduced-motion control is provided.
+First, sweep a spotlight across the stage to find the lost star. Aim with mouse or touch and tap the star; keyboard players can use arrows and Enter, and a direct reveal button is available. Then choose one of three actions in each act and continue to the ending. Your choices appear in the stage scene and finished three-panel comic. Open the comic and use the browser's image menu to save it. In the Backstage Prop Box, spend simulated RF on a moon lantern, brass key, or star confetti, then equip one to show on stage and in the comic. A reduced-motion control is provided.
 
 ## Economy
 

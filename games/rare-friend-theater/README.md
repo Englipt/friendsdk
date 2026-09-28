@@ -1,6 +1,6 @@
 # Rare Friend Theater
 
-A three-act interactive comic starring the player's verified Rare Friends Generations NFT. Choose how your Friend rescues a lost star, equip a stage prop, and view a three-panel comic of your story. Save the rendered image with the browser's image menu.
+A three-act interactive comic starring the player's verified Rare Friends Generations NFT. Each Friend's sprite family gives them a stage role and color. Find a hidden star with the spotlight, choose how your Friend rescues it, equip a stage prop, and view a three-panel comic of your story. Save the rendered image with the browser's image menu.
 
 ## Play locally
 
@@ -13,7 +13,7 @@ npm run dev:game -- games/rare-friend-theater
 
 Open the displayed URL, normally `http://localhost:4173`. Connect a browser wallet on Robinhood mainnet (chain 4663) that owns a hardwired Generations NFT of generation 1 or higher. The SDK verifies ownership before loading the game and supplies the selected Friend. No private key, RF funding, or transaction signature is needed for this simulated preview.
 
-Choose one action per act, then continue. The three choices set the words and scene shown in the PNG comic. Use the browser's image menu to save it; downloads initiated inside the SDK's sandboxed iframe are blocked. The Backstage Prop Box lets you spend simulated RF to add a moon lantern, brass key, or star confetti to the scene and comic. Equip any owned prop at any time. Replay retains your session props and simulated balance; reloading resets them.
+In the first act, move the spotlight with a mouse or touch and tap the hidden star when it appears. Keyboard players can focus the stage, aim with arrow keys, and press Enter. A "Reveal the clue" button provides a direct alternative. Choose one action per act, then continue. The three choices set the words and scene shown in the PNG comic. Use the browser's image menu to save it; downloads initiated inside the SDK's sandboxed iframe are blocked. The Backstage Prop Box lets you spend simulated RF to add a moon lantern, brass key, or star confetti to the scene and comic. Equip any owned prop at any time. Replay retains your session props and simulated balance; reloading resets them.
 
 ## Economy and implementation
 
