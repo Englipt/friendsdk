@@ -14,8 +14,12 @@ for (const width of [960, 390]) {
       assert(box, "The stage should be visible");
       await stage.click({ position: { x: box.width * 583 / 800, y: box.height * 210 / 500 } });
       await game.getByRole("button", { name: /Follow the stardust/ }).waitFor();
+      await game.getByRole("button", { name: "Sugarplum" }).click();
+      assert.equal(await game.getByRole("button", { name: "Sugarplum" }).getAttribute("aria-pressed"), "true");
       await game.getByRole("button", { name: /Moon lantern/ }).click();
       await game.getByText("6 RF PREVIEW").waitFor();
+      await stage.scrollIntoViewIfNeeded();
+      await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-reveal-${width}.png`) });
       for (const [choice, next] of [
         ["Follow the stardust", "Next act"],
         ["Tell a ridiculous joke", "Next act"],
@@ -29,6 +33,7 @@ for (const width of [960, 390]) {
       const image = game.getByRole("img", { name: /Three-panel comic/ });
       await image.waitFor();
       assert((await image.getAttribute("src"))?.startsWith("data:image/png;base64,"), "The comic image must render in the sandbox");
+      await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-comic-${width}.png`) });
       await game.getByRole("button", { name: /Close/ }).click();
       await game.getByRole("button", { name: "Play another version" }).click();
       await game.getByRole("button", { name: "Reveal the clue" }).click();

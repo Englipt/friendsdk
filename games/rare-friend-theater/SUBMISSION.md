@@ -15,7 +15,7 @@ Connect a browser wallet on Robinhood mainnet (chain 4663) holding a hardwired G
 
 ## Play
 
-First, sweep a spotlight across the stage to find the lost star. Aim with mouse or touch and tap the star; keyboard players can use arrows and Enter, and a direct reveal button is available. Then choose one of three actions in each act and continue to the ending. Your choices appear in the stage scene and finished three-panel comic. Open the comic and use the browser's image menu to save it. In the Backstage Prop Box, spend simulated RF on a moon lantern, brass key, or star confetti, then equip one to show on stage and in the comic. A reduced-motion control is provided.
+First, sweep a spotlight across the stage to find the lost star. Aim with mouse or touch and tap the star; keyboard players can use arrows and Enter, and a direct reveal button is available. Then choose one of three actions in each act and continue to the ending. Paint the set Moonbeam, Sugarplum, or Mossy; the chosen colors appear in every scene of the finished three-panel comic. Open the comic and use the browser's image menu to save it. In the Backstage Prop Box, spend simulated RF on a moon lantern, brass key, or star confetti, then equip one to show on stage and in the comic. A reduced-motion control is provided.
 
 ## Economy
 

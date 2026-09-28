@@ -9,8 +9,14 @@ type Choice = { label: string; line: string; color: string; ending: string };
 type Beat = { eyebrow: string; title: string; narration: string; choices: readonly Choice[] };
 type Prop = { id: string; name: string; icon: string; description: string; color: string };
 type Point = { x: number; y: number };
+type SetDesign = { id: string; name: string; sky: string; hill: string; curtain: string; light: string };
 
 const STAR = { x: 583, y: 210 } as const;
+const SETS: readonly SetDesign[] = [
+  { id: "blue", name: "Moonbeam", sky: "#263d65", hill: "#6b7aa4", curtain: "#cf6983", light: "#ffdf9b" },
+  { id: "pink", name: "Sugarplum", sky: "#735178", hill: "#af8fc0", curtain: "#e9809b", light: "#ffe7a6" },
+  { id: "green", name: "Mossy", sky: "#2c625e", hill: "#73a995", curtain: "#d27b7b", light: "#f8e6a0" },
+];
 const PERSONAS: Record<GenerationSprites["familyName"], { role: string; color: string; note: string }> = {
   Skeleton: { role: "The Bone Keeper", color: "#d8f6a3", note: "Brave enough to rattle in the dark." },
   Mask: { role: "The Hidden Hero", color: "#ffd79f", note: "Every mask hides a little courage." },
@@ -52,6 +58,21 @@ const BEATS: readonly Beat[] = [
 function rounded(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
 }
+function littleStar(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, mood: "shy" | "happy" | "sleepy") {
+  ctx.save(); ctx.translate(x, y); ctx.shadowColor = "#ffe38d"; ctx.shadowBlur = radius * .9;
+  ctx.fillStyle = "#fff1a3"; ctx.strokeStyle = "#ba754d"; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? radius * .54 : radius; const px = Math.cos(a) * r, py = Math.sin(a) * r; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+  ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+  ctx.fillStyle = "#4c3b55";
+  if (mood === "sleepy") { ctx.strokeStyle = "#4c3b55"; ctx.beginPath(); ctx.arc(-radius * .25, 0, 3, 0, Math.PI); ctx.arc(radius * .25, 0, 3, 0, Math.PI); ctx.stroke(); }
+  else { ctx.beginPath(); ctx.arc(-radius * .25, -1, 2.5, 0, Math.PI * 2); ctx.arc(radius * .25, -1, 2.5, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = "#ef9cad"; ctx.beginPath(); ctx.arc(-radius * .4, radius * .18, 4, 0, Math.PI * 2); ctx.arc(radius * .4, radius * .18, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "#4c3b55"; ctx.lineWidth = 1.5; ctx.beginPath();
+  if (mood === "shy") { ctx.moveTo(-3, radius * .24); ctx.quadraticCurveTo(0, radius * .16, 3, radius * .24); }
+  else { ctx.arc(0, radius * .16, 5, 0, Math.PI); }
+  ctx.stroke(); ctx.restore();
+}
 function drawFriend(ctx: CanvasRenderingContext2D, sprites: GenerationSprites, x: number, y: number, size: number, frameIndex: number) {
   const { frame } = spriteFrame(sprites, "down", false, frameIndex % 8);
   const pixel = size / 16;
@@ -62,32 +83,43 @@ function drawFriend(ctx: CanvasRenderingContext2D, sprites: GenerationSprites, x
   frame.rows.forEach((row, py) => { for (let px = 0; px < 16; px++) if (row[px] === "#") ctx.fillRect(px * pixel, py * pixel, pixel + .3, pixel + .3); });
   ctx.restore();
 }
-function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites: GenerationSprites, beat: number, selected: number | null, prop: Prop | null, frameIndex: number, beam?: Point, clueFound = true) {
+function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites: GenerationSprites, beat: number, selected: number | null, prop: Prop | null, set: SetDesign, frameIndex: number, beam?: Point, clueFound = true) {
   const sx = w / 800, sy = h / 500; ctx.save(); ctx.scale(sx, sy);
   const gradient = ctx.createLinearGradient(0, 0, 0, 500);
-  gradient.addColorStop(0, beat === 2 ? "#261536" : "#10162b"); gradient.addColorStop(1, "#67304d");
+  gradient.addColorStop(0, set.sky); gradient.addColorStop(1, set.hill);
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, 800, 500);
-  ctx.fillStyle = "#f2d4a0"; ctx.globalAlpha = .3;
-  for (let i = 0; i < 12; i++) { const x = (i * 187 + beat * 83) % 800, y = (i * 107 + 37) % 300; ctx.beginPath(); ctx.arc(x, y, i % 3 === 0 ? 3 : 1.5, 0, Math.PI * 2); ctx.fill(); }
+  ctx.fillStyle = "#fff1c5"; ctx.globalAlpha = .7;
+  for (let i = 0; i < 24; i++) { const x = (i * 187 + beat * 83) % 800, y = (i * 107 + 37) % 300; ctx.beginPath(); ctx.arc(x, y, i % 3 === 0 ? 2.5 : 1.2, 0, Math.PI * 2); ctx.fill(); }
   ctx.globalAlpha = 1;
+  ctx.fillStyle = "rgba(255, 248, 232, .24)";
+  for (const [x, y, scale] of [[138, 132, 1], [316, 91, .65], [675, 122, .8]] as const) {
+    ctx.beginPath(); ctx.ellipse(x, y, 42 * scale, 14 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - 19 * scale, y - 7 * scale, 22 * scale, 15 * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + 20 * scale, y - 10 * scale, 25 * scale, 17 * scale, 0, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.fillStyle = PERSONAS[sprites.familyName].color; ctx.globalAlpha = .16; ctx.beginPath(); ctx.moveTo(367, 0); ctx.lineTo(190, 410); ctx.lineTo(610, 410); ctx.lineTo(437, 0); ctx.fill(); ctx.globalAlpha = 1;
-  ctx.fillStyle = "#402845"; ctx.fillRect(0, 390, 800, 110);
-  ctx.fillStyle = "#b88473"; ctx.fillRect(0, 385, 800, 10);
-  ctx.fillStyle = "#614060"; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(80, 90, 35, 280, 108, 378); ctx.lineTo(0, 415); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(800, 0); ctx.bezierCurveTo(720, 90, 765, 280, 692, 378); ctx.lineTo(800, 415); ctx.fill();
-  ctx.fillStyle = "#a46476"; ctx.fillRect(0, 0, 800, 23); ctx.fillRect(0, 0, 37, 390); ctx.fillRect(763, 0, 37, 390);
-  ctx.fillStyle = "#ffdc99"; ctx.font = "600 18px Georgia"; ctx.textAlign = "center"; ctx.fillText("THE LITTLE LOST STAR", 400, 52);
+  ctx.fillStyle = "rgba(255, 237, 187, .16)"; ctx.beginPath(); ctx.moveTo(105, 386); ctx.quadraticCurveTo(227, 315, 360, 386); ctx.quadraticCurveTo(540, 289, 700, 386); ctx.fill();
+  ctx.fillStyle = "#7a5365"; ctx.fillRect(0, 390, 800, 110);
+  ctx.fillStyle = "#b97c78"; ctx.fillRect(0, 388, 800, 13);
+  ctx.strokeStyle = "rgba(255, 228, 180, .20)"; ctx.lineWidth = 2; for (let x = 0; x < 800; x += 76) { ctx.beginPath(); ctx.moveTo(x, 401); ctx.lineTo(x - 30, 500); ctx.stroke(); }
+  ctx.fillStyle = set.curtain; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(98, 88, 44, 292, 112, 388); ctx.lineTo(0, 415); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(800, 0); ctx.bezierCurveTo(702, 88, 756, 292, 688, 388); ctx.lineTo(800, 415); ctx.fill();
+  ctx.fillStyle = "rgba(77, 35, 68, .22)"; for (let x of [24, 62, 738, 778]) { ctx.fillRect(x, 0, 9, 382); }
+  ctx.fillStyle = set.curtain; ctx.fillRect(0, 0, 800, 28); ctx.fillRect(0, 0, 28, 390); ctx.fillRect(772, 0, 28, 390);
+  for (let x = 0; x <= 800; x += 50) { ctx.beginPath(); ctx.arc(x + 25, 26, 28, 0, Math.PI); ctx.fill(); }
+  ctx.strokeStyle = set.light; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(35, 57); ctx.lineTo(765, 57); ctx.stroke();
+  ctx.fillStyle = set.light; ctx.font = "600 18px Georgia"; ctx.textAlign = "center"; ctx.fillText("The Little Lost Star", 400, 82);
   if (beat === 0) {
-    ctx.fillStyle = "#d6ad72"; rounded(ctx, 520, 245, 110, 140, 8);
-    ctx.fillStyle = "#39283d"; rounded(ctx, 533, 260, 84, 125, 38);
-    ctx.fillStyle = "#ffe69c"; ctx.beginPath(); ctx.arc(570, 286, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#f3d7a3"; rounded(ctx, 520, 245, 110, 140, 12);
+    ctx.fillStyle = "#674260"; rounded(ctx, 532, 258, 86, 127, 38);
+    ctx.fillStyle = "#ffe69c"; ctx.beginPath(); ctx.arc(569, 288, 5, 0, Math.PI * 2); ctx.fill();
   } else if (beat === 1) {
-    ctx.fillStyle = "#c59675"; rounded(ctx, 500, 157, 146, 227, 12);
-    ctx.fillStyle = "#51405c"; rounded(ctx, 515, 172, 116, 211, 55);
-    ctx.strokeStyle = "#ffdfab"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(573, 238, 21, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#f4d6a7"; rounded(ctx, 500, 157, 146, 227, 20);
+    ctx.fillStyle = "#785075"; rounded(ctx, 513, 170, 120, 213, 55);
+    ctx.strokeStyle = "#fff1c6"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(573, 238, 24, 0, Math.PI * 2); ctx.stroke();
+    littleStar(ctx, 573, 238, 18, "sleepy");
   } else {
-    ctx.fillStyle = "#ffdd86"; ctx.shadowColor = "#ffe1a5"; ctx.shadowBlur = 45;
-    ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 17 : 36; const px = 577 + Math.cos(a) * r, py = 255 + Math.sin(a) * r; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+    littleStar(ctx, 575, 264, 52, "happy");
   }
   ctx.fillStyle = "#211a35"; ctx.globalAlpha = .4; ctx.beginPath(); ctx.ellipse(316, 389, 125, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   drawFriend(ctx, sprites, 315, 306 + (frameIndex % 2 ? -2 : 0), 160, frameIndex);
@@ -97,9 +129,10 @@ function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites:
   if (beat === 0 && clueFound) {
     ctx.strokeStyle = "rgba(255, 227, 137, .72)"; ctx.lineWidth = 3; ctx.setLineDash([3, 11]);
     ctx.beginPath(); ctx.moveTo(378, 331); ctx.bezierCurveTo(462, 294, 505, 237, STAR.x, STAR.y); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#fff0a1"; ctx.shadowColor = "#ffe079"; ctx.shadowBlur = 32;
-    ctx.beginPath(); for (let i = 0; i < 10; i++) { const angle = -Math.PI / 2 + i * Math.PI / 5, radius = i % 2 ? 12 : 25; ctx.lineTo(STAR.x + Math.cos(angle) * radius, STAR.y + Math.sin(angle) * radius); } ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+    littleStar(ctx, STAR.x, STAR.y, 25, "shy");
   }
+  ctx.fillStyle = "#513b5a";
+  for (const x of [46, 112, 688, 752]) { ctx.beginPath(); ctx.arc(x, 493, 26, Math.PI, 0); ctx.fill(); ctx.beginPath(); ctx.ellipse(x - 11, 466, 7, 19, -.22, 0, Math.PI * 2); ctx.ellipse(x + 11, 466, 7, 19, .22, 0, Math.PI * 2); ctx.fill(); }
   if (selected !== null) {
     const accent = BEATS[beat].choices[selected].color;
     ctx.fillStyle = accent; ctx.shadowColor = accent; ctx.shadowBlur = 18;
@@ -112,7 +145,7 @@ function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites:
     ctx.fillText(BEATS[beat].choices[selected].line, 400, 451, 620);
   }
   if (beat === 0 && !clueFound && beam) {
-    ctx.fillStyle = "rgba(5, 7, 20, .82)";
+    ctx.fillStyle = "rgba(5, 7, 20, .55)";
     ctx.beginPath(); ctx.rect(0, 0, 800, 500); ctx.moveTo(beam.x + 105, beam.y);
     ctx.arc(beam.x, beam.y, 105, 0, Math.PI * 2, true); ctx.fill("evenodd");
     const glow = ctx.createRadialGradient(beam.x, beam.y, 5, beam.x, beam.y, 105);
@@ -121,14 +154,13 @@ function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites:
     ctx.strokeStyle = "rgba(255, 232, 166, .75)"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(beam.x, beam.y, 105, 0, Math.PI * 2); ctx.stroke();
     if (Math.hypot(beam.x - STAR.x, beam.y - STAR.y) < 105) {
-      ctx.fillStyle = "#fff3aa"; ctx.shadowColor = "#ffe079"; ctx.shadowBlur = 30;
-      ctx.beginPath(); for (let i = 0; i < 10; i++) { const angle = -Math.PI / 2 + i * Math.PI / 5, radius = i % 2 ? 12 : 24; ctx.lineTo(STAR.x + Math.cos(angle) * radius, STAR.y + Math.sin(angle) * radius); } ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+      littleStar(ctx, STAR.x, STAR.y, 25, "shy");
     }
   }
   ctx.restore();
 }
 
-function renderComic(sprites: GenerationSprites, choices: readonly number[], prop: Prop | null, friendId: bigint) {
+function renderComic(sprites: GenerationSprites, choices: readonly number[], prop: Prop | null, set: SetDesign, friendId: bigint) {
   const canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 2380;
   const ctx = canvas.getContext("2d"); if (!ctx) throw new Error("Canvas export is unavailable.");
   ctx.fillStyle = "#f4e9d1"; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -136,7 +168,7 @@ function renderComic(sprites: GenerationSprites, choices: readonly number[], pro
   ctx.font = "20px Arial"; ctx.fillText(`A little lost star · ${PERSONAS[sprites.familyName].role} · Friend #${friendId}`, 66, 111);
   for (let i = 0; i < 3; i++) {
     ctx.fillStyle = "#302541"; ctx.font = "bold 18px Arial"; ctx.fillText(BEATS[i].eyebrow, 65, 157 + i * 730);
-    ctx.save(); ctx.translate(64, 171 + i * 730); drawStage(ctx, 1072, 670, sprites, i, choices[i], prop, 0); ctx.restore();
+    ctx.save(); ctx.translate(64, 171 + i * 730); drawStage(ctx, 1072, 670, sprites, i, choices[i], prop, set, 0); ctx.restore();
   }
   ctx.fillStyle = "#302541"; ctx.font = "italic 24px Georgia";
   ctx.fillText(`Friend #${friendId} ${BEATS[0].choices[choices[0]].ending},`, 65, 2320);
@@ -158,6 +190,7 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
   const [motion, setMotion] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [frame, setFrame] = useState(0);
   const [comic, setComic] = useState<string | null>(null);
+  const [design, setDesign] = useState<SetDesign>(SETS[0]);
   const [beam, setBeam] = useState<Point>({ x: 275, y: 260 });
   const [clueFound, setClueFound] = useState(false);
   const currentProp = PROPS.find(p => p.id === equipped) ?? null;
@@ -165,7 +198,7 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
   const persona = sprites ? PERSONAS[sprites.familyName] : null;
 
   useEffect(() => {
-    let active = true; setSprites(null); setLoading(true); setError(""); setBeat(0); setChoices([]); setFinale(false); setComic(null); setBalance(STARTING_RF); setOwned([]); setEquipped(null); setBeam({ x: 275, y: 260 }); setClueFound(false);
+    let active = true; setSprites(null); setLoading(true); setError(""); setBeat(0); setChoices([]); setFinale(false); setComic(null); setBalance(STARTING_RF); setOwned([]); setEquipped(null); setDesign(SETS[0]); setBeam({ x: 275, y: 260 }); setClueFound(false);
     Promise.all([client.read(), reader.read(friendId)]).then(([snapshot, art]) => {
       if (!active) return;
       if (snapshot.friendId !== friendId) throw new Error("The selected Friend changed. Reconnect and retry.");
@@ -174,7 +207,7 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
     return () => { active = false; };
   }, [client, friendId]);
   useEffect(() => { if (!motion || paused || !sprites) return; const timer = window.setInterval(() => setFrame(v => (v + 1) % 8), 300); return () => window.clearInterval(timer); }, [motion, paused, sprites]);
-  useEffect(() => { const ctx = canvas.current?.getContext("2d"); if (ctx && sprites) drawStage(ctx, 800, 500, sprites, Math.min(beat, 2), choices[beat] ?? null, currentProp, frame, beam, clueFound); }, [sprites, beat, choices, equipped, frame, beam, clueFound]);
+  useEffect(() => { const ctx = canvas.current?.getContext("2d"); if (ctx && sprites) drawStage(ctx, 800, 500, sprites, Math.min(beat, 2), choices[beat] ?? null, currentProp, design, frame, beam, clueFound); }, [sprites, beat, choices, equipped, design, frame, beam, clueFound]);
   function pointAt(event: PointerEvent<HTMLCanvasElement>): Point {
     const box = event.currentTarget.getBoundingClientRect();
     return { x: Math.max(0, Math.min(800, (event.clientX - box.left) * 800 / box.width)), y: Math.max(0, Math.min(500, (event.clientY - box.top) * 500 / box.height)) };
@@ -201,11 +234,12 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
     {loading || error ? <div className="rft-loading" role={error ? "alert" : "status"}><span className="rft-loading-star">✦</span><h1>{error ? "The curtain caught" : "Preparing the stage"}</h1><p>{error || "Loading your verified Friend and their original sprite…"}</p>{error && <button onClick={() => { setLoading(true); setError(""); void Promise.all([client.read(), reader.read(friendId)]).then(([snapshot, art]) => { if (snapshot.friendId !== friendId) throw new Error("The selected Friend changed."); setSprites(art); setLoading(false); }).catch(cause => { setError(cause instanceof Error ? cause.message : "Could not load your Friend."); setLoading(false); }); }} disabled={paused}>Retry</button>}</div> : <div className="rft-content">
       <section className="rft-stage-col"><div className="rft-stage-frame"><div className="rft-stage-header"><span>Tonight's performance</span><span>Act {beat + 1} of 3</span></div><canvas ref={canvas} width={800} height={500} tabIndex={beat === 0 && !clueFound ? 0 : -1} onPointerMove={aim} onPointerDown={reveal} onKeyDown={handleStageKey} className={beat === 0 && !clueFound ? "rft-interactive-stage" : ""} aria-label={beat === 0 && !clueFound ? "Search the stage with the spotlight. Tap near the hidden star, or use arrow keys and Enter." : `Illustrated stage starring your Rare Friend: ${BEATS[Math.min(beat, 2)].title}`} /><div className="rft-stage-footer"><span>{persona?.role} · Friend #{friendId.toString()}</span><span>The Little Lost Star</span></div></div><div className="rft-cast"><span className="rft-cast-icon" style={{ color: persona?.color }}>✦</span><div><strong>{persona?.role}</strong><small>{persona?.note}</small></div><span className="rft-cast-id">#{friendId.toString()}</span></div><div className="rft-below"><span>{beat === 0 && !clueFound ? "Move the spotlight to find the star" : "Your story is taking shape"}</span><span className="rft-progress">{BEATS.map((_, i) => <i key={i} className={i <= beat ? "on" : ""} />)}</span><label><input type="checkbox" checked={!motion} onChange={e => setMotion(!e.target.checked)} /> Reduce motion</label></div></section>
       <section className="rft-panel" aria-live="polite"><div className="rft-panel-meta"><span>{complete ? "Final curtain" : BEATS[beat].eyebrow}</span><span>Scene {beat + 1} / 3</span></div><h1>{complete ? "A star is born." : BEATS[beat].title}</h1><p className="rft-narration">{complete ? `${persona?.role} ${BEATS[0].choices[choices[0]].ending}, ${BEATS[1].choices[choices[1]].ending}, and ${BEATS[2].choices[choices[2]].ending}.` : BEATS[beat].narration.replace("Your Friend", persona?.role ?? "Your Friend")}</p>
-        {complete ? <div className="rft-final"><p>Three scenes. One very rare star.</p><button className="rft-primary" disabled={paused} onClick={() => { if (!sprites) return; try { setComic(renderComic(sprites, choices, currentProp, friendId)); } catch (cause) { setError(cause instanceof Error ? cause.message : "Comic export failed."); } }}>View your comic</button><button className="rft-secondary" disabled={paused} onClick={replay}>Play another version</button></div>
+        {complete ? <div className="rft-final"><p>Three scenes. One very rare star.</p><button className="rft-primary" disabled={paused} onClick={() => { if (!sprites) return; try { setComic(renderComic(sprites, choices, currentProp, design, friendId)); } catch (cause) { setError(cause instanceof Error ? cause.message : "Comic export failed."); } }}>View your comic</button><button className="rft-secondary" disabled={paused} onClick={replay}>Play another version</button></div>
           : beat === 0 && !clueFound ? <div className="rft-search" role="status"><strong>Find the missing clue</strong><p>Move your spotlight across the stage. When the little star appears, tap it. Keyboard: focus the stage, use arrow keys, then press Enter.</p><button type="button" className="rft-secondary" disabled={paused} onClick={() => setClueFound(true)}>Reveal the clue</button></div>
           : choices.length === beat + 1 ? <div className="rft-chosen"><span>Your Friend chose</span><strong>{BEATS[beat].choices[choices[beat]].label}</strong><p>{BEATS[beat].choices[choices[beat]].line}</p><button className="rft-primary" disabled={paused} onClick={next}>{beat === 2 ? "See the ending" : "Next act"}</button></div>
           : <div className="rft-choices">{BEATS[beat].choices.map((choice, i) => <button key={choice.label} disabled={paused} onClick={() => pick(i)}><span className="rft-choice-no">0{i + 1}</span><span>{choice.label}</span><span className="rft-choice-arrow">↗</span></button>)}</div>}
-        <div className="rft-props"><div className="rft-props-head"><div><span>BACKSTAGE PROP BOX</span><small>Dress the scene. Props appear in your comic.</small></div><b>{balance} <small>RF PREVIEW</small></b></div><div className="rft-prop-list">{PROPS.map(prop => <button key={prop.id} className={equipped === prop.id ? "rft-prop equipped" : "rft-prop"} disabled={paused || (!owned.includes(prop.id) && balance < COST)} onClick={() => owned.includes(prop.id) ? setEquipped(prop.id) : buy(prop)}><span className="rft-prop-icon" style={{ color: prop.color }}>{prop.icon}</span><span><strong>{prop.name}</strong><small>{prop.description}</small></span><em>{equipped === prop.id ? "ON" : owned.includes(prop.id) ? "USE" : `${COST} RF`}</em></button>)}</div><p className="rft-disclaimer">Preview RF and props exist only for this session. No wallet transaction or real token spend.</p></div>
+        <div className="rft-set-design"><div className="rft-set-heading"><strong>Paint the backdrop</strong><small>The color stays with your comic.</small></div><div className="rft-set-list">{SETS.map(set => <button key={set.id} type="button" aria-pressed={design.id === set.id} disabled={paused} onClick={() => setDesign(set)}><i style={{ background: set.sky, borderColor: set.curtain }} />{set.name}</button>)}</div></div>
+        <div className="rft-props"><div className="rft-props-head"><div><span>Backstage prop box</span><small>Dress the scene. Props appear in your comic.</small></div><b>{balance} <small>RF preview</small></b></div><div className="rft-prop-list">{PROPS.map(prop => <button key={prop.id} className={equipped === prop.id ? "rft-prop equipped" : "rft-prop"} disabled={paused || (!owned.includes(prop.id) && balance < COST)} onClick={() => owned.includes(prop.id) ? setEquipped(prop.id) : buy(prop)}><span className="rft-prop-icon" style={{ color: prop.color }}>{prop.icon}</span><span><strong>{prop.name}</strong><small>{prop.description}</small></span><em>{equipped === prop.id ? "On" : owned.includes(prop.id) ? "Use" : `${COST} RF`}</em></button>)}</div><p className="rft-disclaimer">Preview RF and props exist only for this session. No wallet transaction or real token spend.</p></div>
       </section>
     </div>}
     {comic && <div className="rft-comic-overlay" role="dialog" aria-modal="true" aria-label="Your finished comic"><div className="rft-comic-head"><span>YOUR RARE FRIEND COMIC</span><button type="button" onClick={() => setComic(null)}>Close ×</button></div><p>Right-click or long-press the image to save it.</p><img src={comic} alt={`Three-panel comic starring Rare Friend #${friendId}`} /></div>}
