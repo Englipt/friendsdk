@@ -3,7 +3,7 @@
 **Builder:** [@Englipt](https://github.com/Englipt)  
 **Category:** Character Spotlight
 
-Your verified Generations NFT stars in a five-act interactive story. Its on-chain sprite family gives it a stage role and color, and its original sprite appears in every scene and in a shareable comic.
+Your verified Generations NFT stars in a seven-act interactive story. Its on-chain sprite family gives it a stage role and color, and its original sprite appears in every scene and in a shareable comic.
 
 ## Source and playable preview
 
@@ -15,11 +15,11 @@ Connect a browser wallet on Robinhood mainnet (chain 4663) holding a hardwired G
 
 ## Play
 
-First, sweep a spotlight across the stage to find the lost star. Aim with mouse or touch and tap the star; keyboard players can use arrows and Enter, and a direct reveal button is available. In act three, play three glowing notes in order by tapping the stage, using Enter or Space, or pressing the accessible next-note button. Your Friend then chooses how to cross a paper bridge before bringing the star onstage. Choose one of three actions in each of the five acts. Your choices accumulate in a visible story trail, appear on the finished five-panel comic, and give the finale a distinct title and illustration. Paint the set Moonbeam, Sugarplum, or Mossy; the chosen colors appear in every scene. Open the comic and use the browser's image menu to save it. In the Backstage Prop Box, spend simulated RF on a moon lantern, brass key, or star confetti, then equip one to show on stage and in the comic. A reduced-motion control is provided.
+First, sweep a spotlight across the stage to find the lost star. Aim with mouse or touch and tap the star; keyboard players can use arrows and Enter, and a direct reveal button is available. In act three, play three glowing notes in order by tapping the stage, using Enter or Space, or pressing the accessible next-note button. In act four, fold three paper steps using the same pointer/keyboard controls or the direct button. Two new acts bring the audience and a paper wish into the story before the finale. Choose one of three actions in each of the seven acts. Your choices accumulate in a visible story trail, appear on the finished seven-panel comic, and give the finale a distinct title and illustration. Paint the set Moonbeam, Sugarplum, or Mossy; the chosen colors appear in every scene. Open the comic and use the browser's image menu to save it. Spend simulated RF on a moon lantern, brass key, or star confetti, or sponsor glowing house lights that appear throughout the show and in the comic. A reduced-motion control is provided.
 
 ## Economy
 
-The preview begins with 8 simulated RF. Each prop costs 2 simulated RF. Props have no chance outcomes, payouts, resale value, or consumable rules. All balances and props reset when the session reloads. No real RF is spent. A live version would need a new contract action to spend RF from the Friend's canonical wallet and persist prop ownership; FriendSDK v0.1.3 does not provide this action. The SDK's required chance-game definition is unused by the theater.
+The preview begins with 8 simulated RF. Each prop costs 2 simulated RF. House lights cost 1, 3, or 5 simulated RF per click, limited by the remaining preview balance. Props and lights have no chance outcomes, payouts, resale value, RF redemption promise, or consumable rules. All balances, props, and lights reset when the session reloads. No real donation or real RF spend occurs. A live version would need reviewed contract actions to spend RF from the Friend's canonical wallet, direct real support to an approved recipient, and persist ownership/support; FriendSDK v0.1.3 does not provide these actions. The SDK's required chance-game definition is unused by the theater.
 
 ## Checks and limitations
 
