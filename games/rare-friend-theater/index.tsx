@@ -15,9 +15,9 @@ const STAR = { x: 583, y: 210 } as const;
 const NOTES: readonly Point[] = [{ x: 470, y: 305 }, { x: 555, y: 260 }, { x: 635, y: 205 }];
 const FINALE_TITLES = ["The Hand-Held Constellation", "The Star Who Shone Alone", "The Great Sky Dance"] as const;
 const SETS: readonly SetDesign[] = [
-  { id: "blue", name: "Moonbeam", sky: "#263d65", hill: "#6b7aa4", curtain: "#cf6983", light: "#ffdf9b" },
-  { id: "pink", name: "Sugarplum", sky: "#735178", hill: "#af8fc0", curtain: "#e9809b", light: "#ffe7a6" },
-  { id: "green", name: "Mossy", sky: "#2c625e", hill: "#73a995", curtain: "#d27b7b", light: "#f8e6a0" },
+  { id: "blue", name: "Moonbeam", sky: "#1b2d4a", hill: "#607395", curtain: "#a24f70", light: "#f8d89a" },
+  { id: "pink", name: "Sugarplum", sky: "#503a65", hill: "#a17eae", curtain: "#b75d7b", light: "#ffe1a4" },
+  { id: "green", name: "Mossy", sky: "#1e4b4a", hill: "#719c8a", curtain: "#a45b67", light: "#f6df9f" },
 ];
 const PERSONAS: Record<GenerationSprites["familyName"], { role: string; color: string; note: string }> = {
   Skeleton: { role: "The Bone Keeper", color: "#d8f6a3", note: "Brave enough to rattle in the dark." },
@@ -98,8 +98,11 @@ function drawFriend(ctx: CanvasRenderingContext2D, sprites: GenerationSprites, x
 function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites: GenerationSprites, beat: number, selected: number | null, prop: Prop | null, set: SetDesign, frameIndex: number, beam?: Point, clueFound = true, melodyCount = 3) {
   const sx = w / 800, sy = h / 500; ctx.save(); ctx.scale(sx, sy);
   const gradient = ctx.createLinearGradient(0, 0, 0, 500);
-  gradient.addColorStop(0, set.sky); gradient.addColorStop(1, set.hill);
+  gradient.addColorStop(0, set.sky); gradient.addColorStop(.72, set.hill); gradient.addColorStop(1, "#ead3ad");
   ctx.fillStyle = gradient; ctx.fillRect(0, 0, 800, 500);
+  const moonGlow = ctx.createRadialGradient(585, 145, 8, 585, 145, 365);
+  moonGlow.addColorStop(0, "rgba(255,239,197,.28)"); moonGlow.addColorStop(1, "rgba(255,239,197,0)");
+  ctx.fillStyle = moonGlow; ctx.fillRect(0, 0, 800, 400);
   ctx.fillStyle = "#fff1c5"; ctx.globalAlpha = .7;
   for (let i = 0; i < 24; i++) { const x = (i * 187 + beat * 83) % 800, y = (i * 107 + 37) % 300; ctx.beginPath(); ctx.arc(x, y, i % 3 === 0 ? 2.5 : 1.2, 0, Math.PI * 2); ctx.fill(); }
   ctx.globalAlpha = 1;
@@ -111,16 +114,25 @@ function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites:
   }
   ctx.fillStyle = PERSONAS[sprites.familyName].color; ctx.globalAlpha = .16; ctx.beginPath(); ctx.moveTo(367, 0); ctx.lineTo(190, 410); ctx.lineTo(610, 410); ctx.lineTo(437, 0); ctx.fill(); ctx.globalAlpha = 1;
   ctx.fillStyle = "rgba(255, 237, 187, .16)"; ctx.beginPath(); ctx.moveTo(105, 386); ctx.quadraticCurveTo(227, 315, 360, 386); ctx.quadraticCurveTo(540, 289, 700, 386); ctx.fill();
-  ctx.fillStyle = "#7a5365"; ctx.fillRect(0, 390, 800, 110);
-  ctx.fillStyle = "#b97c78"; ctx.fillRect(0, 388, 800, 13);
-  ctx.strokeStyle = "rgba(255, 228, 180, .20)"; ctx.lineWidth = 2; for (let x = 0; x < 800; x += 76) { ctx.beginPath(); ctx.moveTo(x, 401); ctx.lineTo(x - 30, 500); ctx.stroke(); }
-  ctx.fillStyle = set.curtain; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(98, 88, 44, 292, 112, 388); ctx.lineTo(0, 415); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(800, 0); ctx.bezierCurveTo(702, 88, 756, 292, 688, 388); ctx.lineTo(800, 415); ctx.fill();
-  ctx.fillStyle = "rgba(77, 35, 68, .22)"; for (let x of [24, 62, 738, 778]) { ctx.fillRect(x, 0, 9, 382); }
-  ctx.fillStyle = set.curtain; ctx.fillRect(0, 0, 800, 28); ctx.fillRect(0, 0, 28, 390); ctx.fillRect(772, 0, 28, 390);
-  for (let x = 0; x <= 800; x += 50) { ctx.beginPath(); ctx.arc(x + 25, 26, 28, 0, Math.PI); ctx.fill(); }
-  ctx.strokeStyle = set.light; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(35, 57); ctx.lineTo(765, 57); ctx.stroke();
-  ctx.fillStyle = set.light; ctx.font = "600 18px Georgia"; ctx.textAlign = "center"; ctx.fillText("The Little Lost Star", 400, 82);
+  const floor = ctx.createLinearGradient(0, 388, 0, 500);
+  floor.addColorStop(0, "#7e5364"); floor.addColorStop(1, "#3f2c43");
+  ctx.fillStyle = floor; ctx.fillRect(0, 390, 800, 110);
+  ctx.fillStyle = "#ddae82"; ctx.fillRect(0, 387, 800, 6);
+  ctx.strokeStyle = "rgba(255, 224, 170, .24)"; ctx.lineWidth = 2; for (let x = 0; x < 800; x += 76) { ctx.beginPath(); ctx.moveTo(x, 398); ctx.lineTo(x - 30, 500); ctx.stroke(); }
+  const velvet = ctx.createLinearGradient(0, 0, 130, 0);
+  velvet.addColorStop(0, "#4c253f"); velvet.addColorStop(.3, set.curtain); velvet.addColorStop(.7, set.curtain); velvet.addColorStop(1, "#552940");
+  ctx.fillStyle = velvet; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(101, 55, 28, 296, 113, 388); ctx.lineTo(0, 415); ctx.fill();
+  const velvetRight = ctx.createLinearGradient(670, 0, 800, 0);
+  velvetRight.addColorStop(0, "#552940"); velvetRight.addColorStop(.35, set.curtain); velvetRight.addColorStop(1, "#4c253f");
+  ctx.fillStyle = velvetRight; ctx.beginPath(); ctx.moveTo(800, 0); ctx.bezierCurveTo(699, 55, 772, 296, 687, 388); ctx.lineTo(800, 415); ctx.fill();
+  ctx.strokeStyle = "rgba(255,225,173,.35)"; ctx.lineWidth = 2;
+  for (const x of [32, 57, 742, 767]) { ctx.beginPath(); ctx.moveTo(x, 32); ctx.bezierCurveTo(x + (x < 400 ? 16 : -16), 180, x - (x < 400 ? 12 : -12), 275, x, 371); ctx.stroke(); }
+  ctx.fillStyle = "#552940"; ctx.fillRect(0, 0, 800, 23); ctx.fillRect(0, 0, 22, 390); ctx.fillRect(778, 0, 22, 390);
+  ctx.fillStyle = set.curtain; for (let x = 0; x <= 800; x += 50) { ctx.beginPath(); ctx.arc(x + 25, 22, 26, 0, Math.PI); ctx.fill(); }
+  ctx.strokeStyle = set.light; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(29, 57); ctx.lineTo(771, 57); ctx.stroke();
+  ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,239,197,.55)"; ctx.strokeRect(24, 53, 752, 331);
+  ctx.fillStyle = set.light; ctx.font = "600 17px Georgia"; ctx.textAlign = "center"; ctx.fillText("✦   THE LITTLE LOST STAR   ✦", 400, 81);
+  for (let x = 105; x <= 695; x += 59) { ctx.fillStyle = "#f5d796"; ctx.shadowColor = "#ffe0a6"; ctx.shadowBlur = 13; ctx.beginPath(); ctx.arc(x, 387, 3, 0, Math.PI * 2); ctx.fill(); } ctx.shadowBlur = 0;
   if (beat === 0) {
     ctx.fillStyle = "#f3d7a3"; rounded(ctx, 520, 245, 110, 140, 12);
     ctx.fillStyle = "#674260"; rounded(ctx, 532, 258, 86, 127, 38);

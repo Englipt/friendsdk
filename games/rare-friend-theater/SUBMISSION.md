@@ -25,4 +25,4 @@ The preview begins with 8 simulated RF. Each prop costs 2 simulated RF. Props ha
 
 SDK build, game validation, game typecheck, and automated desktop and mobile browser tests pass. The browser tests run against the SDK's fixture wallet and simulated RPC responses, including its fresh ownership checks. A real-wallet playthrough remains to be done. The comic is rendered as a PNG image inside the game because the sandbox blocks initiated downloads; players save it with their browser's image menu. The on-chain sprite requires the Robinhood mainnet RPC to be available.
 
-All stage art is drawn by this project. Friend sprite art is provided by FriendSDK; no other third-party assets are used.
+All stage art is drawn by this project, including the velvet curtains, gold proscenium, footlights, scenery, and comic panels. Friend sprite art is provided by FriendSDK; no other third-party assets are used.
