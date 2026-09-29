@@ -20,17 +20,28 @@ for (const width of [960, 390]) {
       await game.getByText("6 RF PREVIEW").waitFor();
       await stage.scrollIntoViewIfNeeded();
       await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-reveal-${width}.png`) });
-      for (const [choice, next] of [
-        ["Follow the stardust", "Next act"],
-        ["Tell a ridiculous joke", "Next act"],
-        ["Dance together", "See the ending"],
+      for (const [act, choice, next] of [
+        [0, "Follow the stardust", "Next act"],
+        [1, "Tell a ridiculous joke", "Next act"],
+        [2, "Hum it softly", "Next act"],
+        [3, "Build paper steps", "Next act"],
+        [4, "Dance together", "See the ending"],
       ]) {
+        if (act === 2) {
+          await game.getByText("Play the lost lullaby · 0/3").waitFor();
+          for (const note of [{ x: 470, y: 305 }, { x: 555, y: 260 }, { x: 635, y: 205 }]) {
+            await stage.scrollIntoViewIfNeeded();
+            const noteBox = await stage.boundingBox();
+            assert(noteBox);
+            await stage.click({ position: { x: noteBox.width * note.x / 800, y: noteBox.height * note.y / 500 } });
+          }
+        }
         await game.getByRole("button", { name: new RegExp(choice) }).click();
         await game.getByRole("button", { name: new RegExp(next) }).click();
       }
       await game.getByRole("heading", { name: "A star is born." }).waitFor();
       await game.getByRole("button", { name: /View your comic/ }).click();
-      const image = game.getByRole("img", { name: /Three-panel comic/ });
+      const image = game.getByRole("img", { name: /Five-panel comic/ });
       await image.waitFor();
       assert((await image.getAttribute("src"))?.startsWith("data:image/png;base64,"), "The comic image must render in the sandbox");
       await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-comic-${width}.png`) });
