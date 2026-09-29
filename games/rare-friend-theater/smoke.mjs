@@ -39,11 +39,15 @@ for (const width of [960, 390]) {
         await game.getByRole("button", { name: new RegExp(choice) }).click();
         await game.getByRole("button", { name: new RegExp(next) }).click();
       }
-      await game.getByRole("heading", { name: "A star is born." }).waitFor();
+      await game.getByRole("heading", { name: "The Great Sky Dance" }).waitFor();
+      assert.equal(await game.locator(".rft-story-trail li").count(), 5, "Every choice should appear in the story trail");
+      await stage.scrollIntoViewIfNeeded();
+      await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-finale-${width}.png`) });
       await game.getByRole("button", { name: /View your comic/ }).click();
       const image = game.getByRole("img", { name: /Five-panel comic/ });
       await image.waitFor();
       assert((await image.getAttribute("src"))?.startsWith("data:image/png;base64,"), "The comic image must render in the sandbox");
+      assert((await image.evaluate(element => element.naturalHeight)) > 3800, "The finished comic should include all five panels");
       await page.locator(".rf-game-frame").screenshot({ path: join(tmpdir(), `rare-friend-theater-comic-${width}.png`) });
       await game.getByRole("button", { name: /Close/ }).click();
       await game.getByRole("button", { name: "Play another version" }).click();

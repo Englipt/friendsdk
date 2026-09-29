@@ -139,6 +139,11 @@
 .rft-secondary:hover:not(:disabled) { background: #fbe5e5; }
 .rft-final p { font: italic 18px Georgia, serif; }
 .rft-final .rft-secondary { margin-top: 8px; }
+.rft-story-trail { margin-top: 22px; padding: 13px 0 2px; border-top: 2px dashed #e3baba; }
+.rft-story-trail > span { color: #9e5f75; font: bold 10px "Trebuchet MS", sans-serif; letter-spacing: .16em; }
+.rft-story-trail ol { display: flex; flex-wrap: wrap; gap: 7px; margin: 9px 0 0; padding: 0; list-style: none; }
+.rft-story-trail li { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 4px 9px 4px 4px; border: 1px solid #dfb9b6; border-radius: 99px; background: #fff0df; color: #674b62; font-size: 11px; }
+.rft-story-trail b { display: grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px; border-radius: 50%; background: #b86d89; color: white; font: 11px Georgia, serif; }
 
 .rft-set-design { margin-top: 23px; padding-top: 14px; border-top: 2px dashed #e3baba; }
 .rft-set-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }

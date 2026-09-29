@@ -13,6 +13,7 @@ type SetDesign = { id: string; name: string; sky: string; hill: string; curtain:
 
 const STAR = { x: 583, y: 210 } as const;
 const NOTES: readonly Point[] = [{ x: 470, y: 305 }, { x: 555, y: 260 }, { x: 635, y: 205 }];
+const FINALE_TITLES = ["The Hand-Held Constellation", "The Star Who Shone Alone", "The Great Sky Dance"] as const;
 const SETS: readonly SetDesign[] = [
   { id: "blue", name: "Moonbeam", sky: "#263d65", hill: "#6b7aa4", curtain: "#cf6983", light: "#ffdf9b" },
   { id: "pink", name: "Sugarplum", sky: "#735178", hill: "#af8fc0", curtain: "#e9809b", light: "#ffe7a6" },
@@ -146,7 +147,17 @@ function drawStage(ctx: CanvasRenderingContext2D, w: number, h: number, sprites:
     for (let i = 0; i < 5; i++) { ctx.save(); ctx.translate(440 + i * 47, 334 - Math.sin(i * Math.PI / 4) * 43); ctx.rotate(.12 - i * .05); rounded(ctx, -22, -8, 44, 18, 4); ctx.restore(); }
     littleStar(ctx, 654, 270, 31, "shy");
   } else {
-    littleStar(ctx, 575, 264, 52, "happy");
+    const finalePosition = selected === 1 ? { x: 522, y: 223 } : selected === 2 ? { x: 588, y: 215 } : { x: 575, y: 264 };
+    littleStar(ctx, finalePosition.x, finalePosition.y, 52, "happy");
+    if (beat === 4 && selected !== null) {
+      ctx.strokeStyle = "#ffe9ad"; ctx.lineWidth = 3; ctx.setLineDash([6, 8]);
+      ctx.beginPath();
+      if (selected === 0) { ctx.moveTo(379, 301); ctx.quadraticCurveTo(449, 235, 523, 261); }
+      else if (selected === 1) { ctx.arc(522, 223, 91, -.9, 2.3); }
+      else { ctx.moveTo(445, 215); ctx.bezierCurveTo(490, 120, 620, 354, 690, 204); }
+      ctx.stroke(); ctx.setLineDash([]);
+      for (let i = 0; i < 7; i++) littleStar(ctx, 440 + (i * 43) % 245, 130 + (i * 67) % 115, 5 + i % 3, "happy");
+    }
   }
   ctx.fillStyle = "#211a35"; ctx.globalAlpha = .4; ctx.beginPath(); ctx.ellipse(316, 389, 125, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   drawFriend(ctx, sprites, 315, 306 + (frameIndex % 2 ? -2 : 0), 160, frameIndex);
@@ -192,9 +203,9 @@ function renderComic(sprites: GenerationSprites, choices: readonly number[], pro
   const ctx = canvas.getContext("2d"); if (!ctx) throw new Error("Canvas export is unavailable.");
   ctx.fillStyle = "#f4e9d1"; ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#302541"; ctx.textAlign = "left"; ctx.font = "bold 50px Georgia"; ctx.fillText("RARE FRIEND THEATER", 64, 78);
-  ctx.font = "20px Arial"; ctx.fillText(`A little lost star · ${PERSONAS[sprites.familyName].role} · Friend #${friendId}`, 66, 111);
+  ctx.font = "20px Arial"; ctx.fillText(`${FINALE_TITLES[choices[4]]} · ${PERSONAS[sprites.familyName].role} · Friend #${friendId}`, 66, 111, 1070);
   for (let i = 0; i < BEATS.length; i++) {
-    ctx.fillStyle = "#302541"; ctx.font = "bold 18px Arial"; ctx.fillText(BEATS[i].eyebrow, 65, 157 + i * 730);
+    ctx.fillStyle = "#302541"; ctx.font = "bold 18px Arial"; ctx.fillText(`${BEATS[i].eyebrow}  /  ${BEATS[i].choices[choices[i]].label}`, 65, 157 + i * 730, 1070);
     ctx.save(); ctx.translate(64, 171 + i * 730); drawStage(ctx, 1072, 670, sprites, i, choices[i], prop, set, 0); ctx.restore();
   }
   ctx.fillStyle = "#302541"; ctx.font = "italic 24px Georgia";
@@ -205,6 +216,7 @@ function renderComic(sprites: GenerationSprites, choices: readonly number[], pro
 }
 
 export default function RareFriendTheater({ friendId, client, paused }: GameComponentProps) {
+  const shell = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [sprites, setSprites] = useState<GenerationSprites | null>(null);
   const [loading, setLoading] = useState(true);
@@ -236,6 +248,7 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
     return () => { active = false; };
   }, [client, friendId]);
   useEffect(() => { if (!motion || paused || !sprites) return; const timer = window.setInterval(() => setFrame(v => (v + 1) % 8), 300); return () => window.clearInterval(timer); }, [motion, paused, sprites]);
+  useEffect(() => { if ((beat > 0 || finale) && shell.current && shell.current.clientWidth <= 800) shell.current.scrollTo({ top: 0, behavior: motion ? "smooth" : "instant" }); }, [beat, finale, motion]);
   useEffect(() => { const ctx = canvas.current?.getContext("2d"); if (ctx && sprites) drawStage(ctx, 800, 500, sprites, beat, choices[beat] ?? null, currentProp, design, frame, beam, clueFound, melodyCount); }, [sprites, beat, choices, equipped, design, frame, beam, clueFound, melodyCount]);
   function pointAt(event: PointerEvent<HTMLCanvasElement>): Point {
     const box = event.currentTarget.getBoundingClientRect();
@@ -265,16 +278,17 @@ export default function RareFriendTheater({ friendId, client, paused }: GameComp
   function next() { if (paused || choices.length !== beat + 1) return; if (beat < BEATS.length - 1) setBeat(beat + 1); else setFinale(true); }
   function buy(prop: Prop) { if (paused || balance < COST || owned.includes(prop.id)) return; setBalance(balance - COST); setOwned([...owned, prop.id]); setEquipped(prop.id); }
   function replay() { if (paused) return; setBeat(0); setChoices([]); setFinale(false); setComic(null); setClueFound(false); setMelodyCount(0); setBeam({ x: 275, y: 260 }); }
-  return <main className="rft-shell" aria-label="Rare Friend Theater">
+  return <main ref={shell} className="rft-shell" aria-label="Rare Friend Theater">
     <div className="rft-top"><div className="rft-brand"><span className="rft-brandmark">✳</span><span>Rare Friend<br/><b>Theater</b></span></div><div className="rft-topright"><span className="rft-sim">Preview mode</span><span>Friend #{friendId.toString()}</span></div></div>
     {loading || error ? <div className="rft-loading" role={error ? "alert" : "status"}><span className="rft-loading-star">✦</span><h1>{error ? "The curtain caught" : "Preparing the stage"}</h1><p>{error || "Loading your verified Friend and their original sprite…"}</p>{error && <button onClick={() => { setLoading(true); setError(""); void Promise.all([client.read(), reader.read(friendId)]).then(([snapshot, art]) => { if (snapshot.friendId !== friendId) throw new Error("The selected Friend changed."); setSprites(art); setLoading(false); }).catch(cause => { setError(cause instanceof Error ? cause.message : "Could not load your Friend."); setLoading(false); }); }} disabled={paused}>Retry</button>}</div> : <div className="rft-content">
       <section className="rft-stage-col"><div className="rft-stage-frame"><div className="rft-stage-header"><span>Tonight's performance</span><span>Act {beat + 1} of {BEATS.length}</span></div><canvas ref={canvas} width={800} height={500} tabIndex={(beat === 0 && !clueFound) || (beat === 2 && melodyCount < NOTES.length) ? 0 : -1} onPointerMove={aim} onPointerDown={reveal} onKeyDown={handleStageKey} className={(beat === 0 && !clueFound) || (beat === 2 && melodyCount < NOTES.length) ? "rft-interactive-stage" : ""} aria-label={beat === 0 && !clueFound ? "Search the stage with the spotlight. Tap near the hidden star, or use arrow keys and Enter." : beat === 2 && melodyCount < NOTES.length ? `Play note ${melodyCount + 1} of ${NOTES.length}. Tap the glowing note or press Enter.` : `Illustrated stage starring your Rare Friend: ${BEATS[beat].title}`} /><div className="rft-stage-footer"><span>{persona?.role} · Friend #{friendId.toString()}</span><span>The Little Lost Star</span></div></div><div className="rft-cast"><span className="rft-cast-icon" style={{ color: persona?.color }}>✦</span><div><strong>{persona?.role}</strong><small>{persona?.note}</small></div><span className="rft-cast-id">#{friendId.toString()}</span></div><div className="rft-below"><span>{beat === 0 && !clueFound ? "Move the spotlight to find the star" : beat === 2 && melodyCount < NOTES.length ? `Play the melody · ${melodyCount}/${NOTES.length}` : "Your story is taking shape"}</span><span className="rft-progress">{BEATS.map((_, i) => <i key={i} className={i <= beat ? "on" : ""} />)}</span><label><input type="checkbox" checked={!motion} onChange={e => setMotion(!e.target.checked)} /> Reduce motion</label></div></section>
-      <section className="rft-panel" aria-live="polite"><div className="rft-panel-meta"><span>{complete ? "Final curtain" : BEATS[beat].eyebrow}</span><span>Scene {beat + 1} / {BEATS.length}</span></div><h1>{complete ? "A star is born." : BEATS[beat].title}</h1><p className="rft-narration">{complete ? `${persona?.role} ${choices.map((choice, i) => BEATS[i].choices[choice].ending).join(", ")}.` : BEATS[beat].narration.replace("Your Friend", persona?.role ?? "Your Friend")}</p>
+      <section className="rft-panel" aria-live="polite"><div className="rft-panel-meta"><span>{complete ? "Final curtain" : BEATS[beat].eyebrow}</span><span>Scene {beat + 1} / {BEATS.length}</span></div><h1>{complete ? FINALE_TITLES[choices[4]] : BEATS[beat].title}</h1><p className="rft-narration">{complete ? `Friend #${friendId} brought the lost star home. ${BEATS[4].choices[choices[4]].line} Every choice became part of tonight's constellation.` : BEATS[beat].narration.replace("Your Friend", persona?.role ?? "Your Friend")}</p>
         {complete ? <div className="rft-final"><p>Five scenes. One very rare star.</p><button className="rft-primary" disabled={paused} onClick={() => { if (!sprites) return; try { setComic(renderComic(sprites, choices, currentProp, design, friendId)); } catch (cause) { setError(cause instanceof Error ? cause.message : "Comic export failed."); } }}>View your comic</button><button className="rft-secondary" disabled={paused} onClick={replay}>Play another version</button></div>
           : beat === 0 && !clueFound ? <div className="rft-search" role="status"><strong>Find the missing clue</strong><p>Move your spotlight across the stage. When the little star appears, tap it. Keyboard: focus the stage, use arrow keys, then press Enter.</p><button type="button" className="rft-secondary" disabled={paused} onClick={() => setClueFound(true)}>Reveal the clue</button></div>
           : beat === 2 && melodyCount < NOTES.length ? <div className="rft-search" role="status"><strong>Play the lost lullaby · {melodyCount}/{NOTES.length}</strong><p>Tap the glowing notes in order. Keyboard: focus the stage and press Enter or Space for each note.</p><button type="button" className="rft-secondary" disabled={paused} onClick={() => setMelodyCount(melodyCount + 1)}>Play next note</button></div>
           : choices.length === beat + 1 ? <div className="rft-chosen"><span>Your Friend chose</span><strong>{BEATS[beat].choices[choices[beat]].label}</strong><p>{BEATS[beat].choices[choices[beat]].line}</p><button className="rft-primary" disabled={paused} onClick={next}>{beat === BEATS.length - 1 ? "See the ending" : "Next act"}</button></div>
           : <div className="rft-choices">{BEATS[beat].choices.map((choice, i) => <button key={choice.label} disabled={paused} onClick={() => pick(i)}><span className="rft-choice-no">0{i + 1}</span><span>{choice.label}</span><span className="rft-choice-arrow">↗</span></button>)}</div>}
+        {choices.length > 0 && <div className="rft-story-trail" aria-label="Your story so far"><span>YOUR STORY SO FAR</span><ol>{choices.map((choice, i) => <li key={i}><b>{i + 1}</b>{BEATS[i].choices[choice].label}</li>)}</ol></div>}
         <div className="rft-set-design"><div className="rft-set-heading"><strong>Paint the backdrop</strong><small>The color stays with your comic.</small></div><div className="rft-set-list">{SETS.map(set => <button key={set.id} type="button" aria-pressed={design.id === set.id} disabled={paused} onClick={() => setDesign(set)}><i style={{ background: set.sky, borderColor: set.curtain }} />{set.name}</button>)}</div></div>
         <div className="rft-props"><div className="rft-props-head"><div><span>Backstage prop box</span><small>Dress the scene. Props appear in your comic.</small></div><b>{balance} <small>RF preview</small></b></div><div className="rft-prop-list">{PROPS.map(prop => <button key={prop.id} className={equipped === prop.id ? "rft-prop equipped" : "rft-prop"} disabled={paused || (!owned.includes(prop.id) && balance < COST)} onClick={() => owned.includes(prop.id) ? setEquipped(prop.id) : buy(prop)}><span className="rft-prop-icon" style={{ color: prop.color }}>{prop.icon}</span><span><strong>{prop.name}</strong><small>{prop.description}</small></span><em>{equipped === prop.id ? "On" : owned.includes(prop.id) ? "Use" : `${COST} RF`}</em></button>)}</div><p className="rft-disclaimer">Preview RF and props exist only for this session. No wallet transaction or real token spend.</p></div>
       </section>
